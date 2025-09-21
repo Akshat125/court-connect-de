@@ -1,18 +1,30 @@
-import React, { useState } from "react";
-import { Filter, Grid, List, MapPin, Clock, Users, Heart } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { Filter, Grid, List, MapPin, Clock, Heart, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Navigation from "@/components/Navigation";
 import FilterDialog from "@/components/FilterDialog";
+import SwipeDeck from "@/components/SwipeDeck";
 import playerProfile1 from "@/assets/player-profile-1.jpg";
 import playerProfile2 from "@/assets/player-profile-2.jpg";
+import playerProfile3 from "@/assets/player-profile-3.jpg";
+import playerProfile4 from "@/assets/player-profile-4.jpg";
 
 const MatchmakingPage = () => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'swipe'>('swipe');
+  const [filters, setFilters] = useState({
+    sport: "all",
+    skills: [] as string[],
+    maxDistanceKm: 5,
+    date: null as Date | null,
+    time: "any",
+    gameFormat: ["singles", "doubles"],
+    withBooking: false,
+  });
 
-  const mockPlayers = [
+  const mockPlayers = useMemo(() => ([
     {
       id: 1,
       name: "Anna Weber",
@@ -41,35 +53,51 @@ const MatchmakingPage = () => {
     },
     {
       id: 3,
-      name: "Sarah Mueller",
-      age: 26,
+      name: "Akshat Tandon",
+      age: 21,
       sport: "Tennis",
-      skill: "Beginner",
-      distance: "3.1 km", 
-      time: "Weekends",
-      image: playerProfile1,
-      bio: "Just started playing tennis and looking for patient partners to improve with.",
-      rating: 4.5,
-      matches: 15,
+      skill: "Intermediate",
+      distance: "2.0 km",
+      time: "Afternoons",
+      image: playerProfile3,
+      bio: "Student who enjoys fast-paced rallies. Open to friendly games and drill sessions.",
+      rating: 4.6,
+      matches: 23,
     },
     {
       id: 4,
-      name: "Thomas Klein",
-      age: 31,
-      sport: "Squash",
+      name: "Shubham Joshi",
+      age: 23,
+      sport: "Table Tennis",
       skill: "Advanced",
-      distance: "2.7 km",
-      time: "Mornings",
-      image: playerProfile2,
-      bio: "Competitive squash player looking for challenging matches.",
-      rating: 4.7,
-      matches: 89,
+      distance: "4.2 km",
+      time: "Early mornings",
+      image: playerProfile4,
+      bio: "Trail lover seeking weekend hiking buddies and outdoor adventures around the city.",
+      rating: 4.4,
+      matches: 12,
     },
-  ];
+  ]), []);
+
+  const filteredPlayers = useMemo(() => {
+    const parseKm = (distance: string) => {
+      const match = distance.match(/([0-9]+\.?[0-9]*)/);
+      return match ? parseFloat(match[1]) : Infinity;
+    };
+
+    return mockPlayers.filter((p) => {
+      const sportOk = filters.sport === 'all' ? true : p.sport.toLowerCase() === filters.sport.toLowerCase();
+      const skillOk = filters.skills.length ? filters.skills.includes(p.skill) : true;
+      const distanceOk = parseKm(p.distance) <= filters.maxDistanceKm;
+      const timeOk = true; // Mock data doesn't have structured date/time
+      // gameFormat and withBooking are placeholders in mock data; keep them as UI-only for now
+      return sportOk && skillOk && distanceOk && timeOk;
+    });
+  }, [mockPlayers, filters]);
 
   const renderGridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {mockPlayers.map((player) => (
+      {filteredPlayers.map((player) => (
         <Card key={player.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
           <div className="relative aspect-[3/4]">
             <img 
@@ -100,13 +128,14 @@ const MatchmakingPage = () => {
                 </span>
                 <span>⭐ {player.rating}</span>
               </div>
-            </div>
-
-            {/* Hover Actions */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Button size="sm" className="bg-accent hover:bg-accent-light">
-                <Heart className="h-4 w-4" />
-              </Button>
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <Button size="sm" variant="outline" className="bg-white/10 backdrop-blur border-white/30 text-white hover:bg-white/20">
+                  <X className="h-4 w-4" />
+                </Button>
+                <Button size="sm" className="bg-accent hover:bg-accent-light">
+                  <Heart className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </Card>
@@ -116,7 +145,7 @@ const MatchmakingPage = () => {
 
   const renderListView = () => (
     <div className="space-y-4">
-      {mockPlayers.map((player) => (
+      {filteredPlayers.map((player) => (
         <Card key={player.id} className="hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
@@ -168,16 +197,16 @@ const MatchmakingPage = () => {
       <Navigation />
       
       <main className="pt-16">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-5 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Find Players</h1>
-              <p className="text-muted-foreground">Connect with racquet sports players in your area</p>
+              <h1 className="text-3xl font-bold mb-2">Find your next match nearby</h1>
+              <p className="text-muted-foreground">Swipe recommended players or refine with filters</p>
             </div>
             
             <div className="flex items-center gap-4">
-              {/* View Toggle */}
+              {/* View Toggle (Grid / List / Swipe) */}
               <div className="flex items-center border border-border rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -195,10 +224,21 @@ const MatchmakingPage = () => {
                 >
                   <List className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant={viewMode === 'swipe' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('swipe')}
+                  className="h-8 w-8 p-0"
+                >
+                  <Heart className="h-4 w-4" />
+                </Button>
               </div>
               
               {/* Filter Button */}
-              <FilterDialog>
+              <FilterDialog
+                initialFilters={filters}
+                onApply={(f) => setFilters(f)}
+              >
                 <Button variant="outline">
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
@@ -210,12 +250,18 @@ const MatchmakingPage = () => {
           {/* Results Count */}
           <div className="mb-6">
             <p className="text-sm text-muted-foreground">
-              Showing {mockPlayers.length} players • Within 5km • All skill levels
+              Showing {filteredPlayers.length} players • Within {filters.maxDistanceKm}km • {filters.sport === 'all' ? 'All sports' : filters.sport}
             </p>
           </div>
 
-          {/* Player Grid/List */}
-          {viewMode === 'grid' ? renderGridView() : renderListView()}
+          {/* Player Grid / List / Swipe */}
+          {viewMode === 'swipe' ? (
+            <SwipeDeck players={filteredPlayers} />
+          ) : viewMode === 'grid' ? (
+            renderGridView()
+          ) : (
+            renderListView()
+          )}
         </div>
       </main>
     </div>

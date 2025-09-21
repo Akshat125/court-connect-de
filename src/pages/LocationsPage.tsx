@@ -1,13 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Search, Filter, Plus, MapPin, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import Navigation from "@/components/Navigation";
+import "leaflet/dist/leaflet.css";
+import L, { type LatLngExpression, type Map as LeafletMap, type LayerGroup, type Icon } from "leaflet";
+
+type Venue = {
+  id: number;
+  name: string;
+  distance: string;
+  rating: number;
+  courts: number;
+  priceRange: string;
+  nextSlot: string;
+  image: string;
+  sport: string;
+  lat: number;
+  lng: number;
+};
 
 const LocationsPage = () => {
   const [selectedSport, setSelectedSport] = useState("tennis");
+  // Simple map only
 
   const sports = [
     { id: "tennis", name: "Tennis", icon: "🎾" },
@@ -16,7 +33,7 @@ const LocationsPage = () => {
     { id: "pickleball", name: "Pickleball", icon: "🏓" },
   ];
 
-  const venues = [
+  const venues: Venue[] = useMemo(() => ([
     {
       id: 1,
       name: "TC Berlin Mitte",
@@ -26,7 +43,9 @@ const LocationsPage = () => {
       priceRange: "€25-40",
       nextSlot: "14:00",
       image: "/api/placeholder/300/200",
-      sport: "tennis"
+      sport: "tennis",
+      lat: 52.5208,
+      lng: 13.4095,
     },
     {
       id: 2,
@@ -37,9 +56,65 @@ const LocationsPage = () => {
       priceRange: "€20-35",
       nextSlot: "16:30",
       image: "/api/placeholder/300/200",
-      sport: "badminton"
+      sport: "badminton",
+      lat: 52.4986,
+      lng: 13.4033,
     },
-  ];
+  ]), []);
+  const icon: Icon = useMemo(() => L.icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    shadowSize: [41, 41],
+  }), []);
+
+  const filteredVenues = useMemo(() => venues.filter(v => v.sport === selectedSport), [venues, selectedSport]);
+  const mapCenter: LatLngExpression = useMemo(() => [52.52, 13.405] as LatLngExpression, []);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const markersRef = useRef<LayerGroup | null>(null);
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+
+  // No custom CSS or overlays in simple mode
+
+  useEffect(() => {
+    if (mapRef.current || !mapDivRef.current) return;
+    const map = L.map(mapDivRef.current).setView(mapCenter, 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+    }).addTo(map);
+    markersRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markersRef.current = null;
+    };
+  }, [mapCenter]);
+
+  useEffect(() => {
+    if (!mapRef.current || !markersRef.current) return;
+    const group = markersRef.current;
+    group.clearLayers();
+    const bounds: L.LatLngExpression[] = [];
+    filteredVenues.forEach((v) => {
+      const m = L.marker([v.lat, v.lng], { icon });
+      m.bindPopup(`<div style=\"font-weight:600\">${v.name}</div><div style=\"font-size:12px;color:#666\">${v.distance} • ⭐ ${v.rating}</div>`);
+      m.addTo(group);
+      bounds.push([v.lat, v.lng]);
+    });
+    if (bounds.length > 0) {
+      const b = L.latLngBounds(bounds as L.LatLngExpression[]);
+      mapRef.current.fitBounds(b, { padding: [20, 20] });
+    } else {
+      mapRef.current.setView(mapCenter, 12);
+    }
+  }, [filteredVenues, icon, mapCenter]);
+
+  const recenter = () => {
+    if (mapRef.current) mapRef.current.setView(mapCenter, 12);
+  };
 
   const games = [
     {
@@ -69,7 +144,7 @@ const LocationsPage = () => {
       <Navigation />
       
       <main className="pt-16">
-        <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="max-w-6xl mx-auto px-5 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -113,13 +188,7 @@ const LocationsPage = () => {
             {/* Map */}
             <div className="lg:col-span-2">
               <Card className="overflow-hidden h-96">
-                <div className="h-full bg-gradient-to-br from-accent/20 to-primary/20 relative flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
-                    <p className="text-sm text-muted-foreground">2 Locations Found in Your Area</p>
-                  </div>
-                </div>
+                <div ref={mapDivRef} className="h-full w-full" />
               </Card>
             </div>
 

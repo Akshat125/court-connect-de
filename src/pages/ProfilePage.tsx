@@ -7,23 +7,56 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Navigation from "@/components/Navigation";
 
+type SportInfo = { name: string; level: string; matches: number; rating?: number };
+
 const ProfilePage = () => {
-  const user = {
-    name: "Shubham Patel",
+  const LEVEL_TO_DEFAULT_RATING: Record<string, number> = {
+    beginner: 1000,
+    intermediate: 1400,
+    advanced: 1800,
+  };
+  const user: {
+    name: string;
+    age: number;
+    bio: string;
+    location: string;
+    distance: string;
+    avatar: string;
+    sports: SportInfo[];
+    stats: { matches: number; wins: number; groups: number };
+  } = {
+    name: "Shubham Joshi",
     age: 23,
-    bio: "Enjoying life...",
+    bio: "Trail lover seeking weekend hiking buddies and outdoor adventures around the city.",
     location: "Berlin, Germany",
-    distance: "5 km away",
-    avatar: "/api/placeholder/120/120",
+    distance: "4.2 km away",
+    avatar: "/src/assets/player-profile-4.jpg",
     sports: [
-      { name: "Tennis", level: "Intermediate", matches: 45 },
-      { name: "Badminton", level: "Advanced", matches: 32 },
+      { name: "Table Tennis", level: "Advanced", matches: 20, rating: 1800 },
+      { name: "Tennis", level: "Intermediate", matches: 18, rating: 1450 },
     ],
     stats: {
-      matches: 77,
-      wins: 52,
-      groups: 3,
+      matches: 30,
+      wins: 18,
+      groups: 2,
     },
+  };
+
+  const getSportEmoji = (name: string) => {
+    const key = name.toLowerCase();
+    if (key.includes("tennis")) return "🎾";
+    if (key.includes("badminton")) return "🏸";
+    if (key.includes("squash")) return "🥍";
+    if (key.includes("hiking")) return "🥾";
+    return "🏅";
+  };
+
+  const getLevelBadgeClass = (level: string) => {
+    const lvl = level.toLowerCase();
+    if (lvl.includes("beginner")) return "bg-emerald-100 text-emerald-800";
+    if (lvl.includes("intermediate")) return "bg-blue-100 text-blue-800";
+    if (lvl.includes("advanced")) return "bg-purple-100 text-purple-800";
+    return "bg-gray-100 text-gray-800";
   };
 
   const menuItems = [
@@ -42,7 +75,7 @@ const ProfilePage = () => {
       <Navigation />
       
       <main className="pt-16">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-4xl mx-auto px-5 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Card */}
             <div className="lg:col-span-2">
@@ -67,10 +100,7 @@ const ProfilePage = () => {
                             {user.location}
                           </div>
                         </div>
-                        <Button variant="outline">
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Profile
-                        </Button>
+                        {/* Edit action moved to Account section */}
                       </div>
                     </div>
                   </div>
@@ -79,15 +109,33 @@ const ProfilePage = () => {
                   <div className="mt-8">
                     <h2 className="text-xl font-semibold mb-4">Sports & Skills</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {user.sports.map((sport) => (
-                        <div key={sport.name} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                          <div>
-                            <span className="font-medium">{sport.name}</span>
-                            <Badge variant="outline" className="ml-2 text-xs">{sport.level}</Badge>
+                      {user.sports.map((sport) => {
+                        const target = LEVEL_TO_DEFAULT_RATING[sport.level.toLowerCase()] ?? 1200;
+                        const rating = sport.rating ?? target;
+                        const ratingPct = Math.min(100, Math.round((rating / 2000) * 100));
+                        return (
+                          <div key={sport.name} className="p-4 rounded-xl border bg-card hover:shadow-sm transition">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg" aria-hidden>{getSportEmoji(sport.name)}</span>
+                                <span className="font-medium">{sport.name}</span>
+                                <Badge className={`text-xs ${getLevelBadgeClass(sport.level)}`}>{sport.level}</Badge>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between text-sm text-muted-foreground">
+                              <span>{sport.matches} matches</span>
+                            </div>
+                            {sport.rating !== undefined && (
+                              <div className="mt-1 text-sm text-muted-foreground">Rating {sport.rating}</div>
+                            )}
+                            {sport.rating !== undefined && (
+                              <div className="mt-3 h-2 w-full rounded bg-muted">
+                                <div className="h-2 rounded bg-accent" style={{ width: `${ratingPct}%` }} />
+                              </div>
+                            )}
                           </div>
-                          <span className="text-sm text-muted-foreground">{sport.matches} matches</span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </CardContent>
