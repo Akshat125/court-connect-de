@@ -65,138 +65,136 @@ const LocationsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="bg-card border-b border-border p-4 sticky top-0 z-40 backdrop-blur-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold">Locations & Games</h1>
-            <p className="text-sm text-muted-foreground">Find courts and join games</p>
-          </div>
-          <Button size="sm" className="bg-accent hover:bg-accent-light">
-            <Plus className="h-4 w-4 mr-2" />
-            Create
-          </Button>
-        </div>
-        
-        <div className="space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search locations..." className="pl-10" />
-          </div>
-          
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {sports.map((sport) => (
-              <Button
-                key={sport.id}
-                variant={selectedSport === sport.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedSport(sport.id)}
-                className={selectedSport === sport.id ? "bg-primary hover:bg-primary/90" : ""}
-              >
-                <span className="mr-2">{sport.icon}</span>
-                {sport.name}
-              </Button>
-            ))}
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4" />
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      <main className="pt-16">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Courts & Games</h1>
+              <p className="text-muted-foreground">Find venues and join ongoing games</p>
+            </div>
+            <Button className="bg-accent hover:bg-accent-light">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Game
             </Button>
           </div>
-        </div>
-      </header>
-
-      <div className="p-4 space-y-6">
-        {/* Map Placeholder */}
-        <Card className="overflow-hidden">
-          <div className="h-48 bg-gradient-to-br from-accent/20 to-primary/20 relative flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Interactive Map</p>
-              <p className="text-xs text-muted-foreground mt-1">2 Locations Found</p>
+          
+          {/* Filters */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search locations..." className="pl-10" />
+            </div>
+            
+            <div className="flex gap-2">
+              {sports.map((sport) => (
+                <Button
+                  key={sport.id}
+                  variant={selectedSport === sport.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedSport(sport.id)}
+                  className={selectedSport === sport.id ? "bg-primary hover:bg-primary/90" : ""}
+                >
+                  <span className="mr-2">{sport.icon}</span>
+                  {sport.name}
+                </Button>
+              ))}
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                More Filters
+              </Button>
             </div>
           </div>
-        </Card>
 
-        {/* Venues */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Nearby Venues</h2>
-          <div className="space-y-3">
-            {venues.map((venue) => (
-              <Card key={venue.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                <div className="flex">
-                  <div className="w-24 h-24 bg-gradient-to-br from-accent/20 to-primary/20 flex-shrink-0"></div>
-                  <CardContent className="flex-1 p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm mb-1">{venue.name}</h3>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                          <span>📍 {venue.distance}</span>
-                          <span>⭐ {venue.rating}</span>
-                          <span>🏟️ {venue.courts} courts</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">{venue.priceRange}</Badge>
-                          <Badge variant="secondary" className="text-xs">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Next: {venue.nextSlot}
-                          </Badge>
-                        </div>
-                      </div>
-                      <Button size="sm" variant="outline" className="ml-2">Book</Button>
-                    </div>
-                  </CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Map */}
+            <div className="lg:col-span-2">
+              <Card className="overflow-hidden h-96">
+                <div className="h-full bg-gradient-to-br from-accent/20 to-primary/20 relative flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Interactive Map</h3>
+                    <p className="text-sm text-muted-foreground">2 Locations Found in Your Area</p>
+                  </div>
                 </div>
               </Card>
-            ))}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Venues */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Nearby Venues</h2>
+                <div className="space-y-3">
+                  {venues.map((venue) => (
+                    <Card key={venue.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="font-semibold">{venue.name}</h3>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                              <span>📍 {venue.distance}</span>
+                              <span>⭐ {venue.rating}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className="text-xs">{venue.priceRange}</Badge>
+                              <Badge variant="secondary" className="text-xs">{venue.courts} courts</Badge>
+                            </div>
+                            <Button size="sm" variant="outline">Book</Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Games */}
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Join Games</h2>
+                <div className="space-y-3">
+                  {games.map((game) => (
+                    <Card key={game.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-sm">{game.title}</h3>
+                              <p className="text-xs text-muted-foreground">by {game.organizer}</p>
+                            </div>
+                            <Badge className="bg-accent text-accent-foreground text-xs">{game.price}</Badge>
+                          </div>
+                          
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            <div className="flex items-center justify-between">
+                              <span>{game.venue}</span>
+                              <span>{game.time}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span>{game.players} players</span>
+                              <Badge variant="outline" className="text-xs">{game.skill}</Badge>
+                            </div>
+                          </div>
+                          
+                          <Button size="sm" className="w-full bg-accent hover:bg-accent-light">
+                            Join Game
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Active Games */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Join Games</h2>
-          <div className="space-y-3">
-            {games.map((game) => (
-              <Card key={game.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold text-sm mb-1">{game.title}</h3>
-                      <p className="text-xs text-muted-foreground mb-2">by {game.organizer}</p>
-                    </div>
-                    <Badge className="bg-accent text-accent-foreground text-xs">{game.price}</Badge>
-                  </div>
-                  
-                  <div className="space-y-2 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {game.venue}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {game.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {game.players} players
-                      </span>
-                      <Badge variant="outline" className="text-xs">{game.skill}</Badge>
-                    </div>
-                  </div>
-                  
-                  <Button size="sm" className="w-full mt-3 bg-accent hover:bg-accent-light">
-                    Join Game
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <Navigation />
+      </main>
     </div>
   );
 };

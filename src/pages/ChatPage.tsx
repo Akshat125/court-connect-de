@@ -82,21 +82,23 @@ const ChatPage = () => {
     switch (activeTab) {
       case "groups":
         return (
-          <div className="space-y-3">
+          <>
             {groupChats.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-semibold mb-2">No Groups</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Create a group to manage your team or join your sports group near you.
-                  </p>
-                  <Button className="bg-accent hover:bg-accent-light">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Group
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="font-semibold mb-2">No Groups</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Create a group to manage your team or join your sports group near you.
+                    </p>
+                    <Button className="bg-accent hover:bg-accent-light">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Group
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             ) : (
               groupChats.map((chat) => (
                 <Card key={chat.id} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -137,12 +139,12 @@ const ChatPage = () => {
                 </Card>
               ))
             )}
-          </div>
+          </>
         );
 
       case "games":
         return (
-          <div className="space-y-3">
+          <>
             {gameChats.map((chat) => (
               <Card key={chat.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4">
@@ -180,12 +182,12 @@ const ChatPage = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </>
         );
 
       case "dms":
         return (
-          <div className="space-y-3">
+          <>
             {directMessages.map((chat) => (
               <Card key={chat.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4">
@@ -223,7 +225,7 @@ const ChatPage = () => {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </>
         );
 
       default:
@@ -232,34 +234,46 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="bg-card border-b border-border p-4 sticky top-0 z-40 backdrop-blur-sm">
-        <h1 className="text-xl font-bold mb-4">Conversations</h1>
-        
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      <div className="p-4">
-        {renderContent()}
-      </div>
-
+    <div className="min-h-screen bg-background">
       <Navigation />
+      
+      <main className="pt-16">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Conversations</h1>
+              <p className="text-muted-foreground">Stay connected with your sports community</p>
+            </div>
+            <Button className="bg-accent hover:bg-accent-light">
+              <Plus className="h-4 w-4 mr-2" />
+              New Group
+            </Button>
+          </div>
+          
+          {/* Tabs */}
+          <div className="flex gap-1 bg-muted rounded-lg p-1 mb-8 max-w-md">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {renderContent()}
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
